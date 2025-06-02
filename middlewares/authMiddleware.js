@@ -1,21 +1,23 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-function checkToken(req, res, next) {
+const checkToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  const token = authHeader?.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ msg: "Acesso negado" });
+    return res.status(401).json({ msg: "Acesso negado - Token não fornecido" });
   }
 
   try {
     const secret = process.env.SECRET;
-    const verified = jwt.verify(token, secret);
-    req.user = verified;
+    const decoded = jwt.verify(token, secret);
+
+    req.user = await User.findById(decoded.id).select("-password");
     next();
   } catch (error) {
-    return res.status(401).json({ msg: "Token inválido ou expirado." });
+    return res.status(401).json({ msg: "Token inválido ou expirado" });
   }
-}
+};
 
 module.exports = checkToken;
