@@ -1,25 +1,12 @@
-const authService = require("../services/authService");
+const User = require("../models/User");
 
-exports.register = async (req, res, next) => {
+exports.getUser = async (req, res, next) => {
   try {
-    const { name, email, password, confirmPassword } = req.body;
-    const user = await authService.registerUser(
-      name,
-      email,
-      password,
-      confirmPassword
-    );
-    res.status(201).json({ msg: "Usuário criado com sucesso!", user });
-  } catch (error) {
-    next(error);
-  }
-};
-
-exports.login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const token = await authService.loginUser(email, password);
-    res.status(200).json({ msg: "Autenticado com sucesso", token });
+    const user = await User.findById(req.params.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ msg: "Usuário não encontrado" });
+    }
+    res.status(200).json(user);
   } catch (error) {
     next(error);
   }
